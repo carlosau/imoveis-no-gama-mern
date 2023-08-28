@@ -1,4 +1,4 @@
-#imoveis_app_server
+#imoveis no gama MERN
 
 #create config.js with the MongoDB connection
 
