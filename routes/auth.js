@@ -2,9 +2,9 @@ import express from 'express'
 
 const router = express.Router()
 
-import * as auth from '../controllers/auth.js'
+import * as authCtrl from '../controllers/auth.js'
 
-router.get('/', auth.welcome)
-router.post('/pre-register', auth.preRegister)
+router.get('/', authCtrl.welcome)
+router.post('/pre-register', authCtrl.preRegister)
 
 export default router
