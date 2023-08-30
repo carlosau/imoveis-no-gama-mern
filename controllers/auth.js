@@ -16,13 +16,23 @@ export const preRegister = async (req, res) => {
   // create jwt with email and password then email it as clickable link
   // only when user clicks on link, then we create the user
   try {
-    // console.log(req.body)
-
     const { email, password } = req.body;
+    
+    // validate
+    if (!validator.validate(email)) return res.json({ error: "Email inválido" });
+    if (password && password.length < 6) return res.json({ error: "Senha deve ter no mínimo 6 caracteres" });    
+    if (!password) return res.json({ error: "Senha é obrigatória" });
+
+    // check if user exists in our db
+    const user = await User.findOne({ email })
+    if (user) return res.json({ error: "Email já cadastrado" });
+
+    // create token with email and password
     const token = jwt.sign({ email, password }, config.JWT_SECRET, {
       expiresIn: "1h",
     });
 
+    // send mail using emailTemplate function
     config.AWSSES.sendEmail(emailTemplate(email, `
     <p>Por favor, clique no link abaixo para completar seu registro:</p>
     <a href=${config.CLIENT_URL}/auth/account-activate/${token}>Ativar minha conta</a>
