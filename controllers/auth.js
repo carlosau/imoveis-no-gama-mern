@@ -78,3 +78,30 @@ export const register = async (req, res) => {
     return res.json({ error: "Something wrong. Try again." });
   }
 };
+
+export const login = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        // 1 finder user by email
+        const user = await User.findOne({ email })
+        if (!user) return res.json({ error: "Email não cadastrado" });
+
+        // 2 compare password
+        const match = await comparePassword(password, user.password)
+        if (!match) return res.json({ error: "Wrong password" });
+
+        // 3 generate signed jwt and return as token and user
+        const token = jwt.sign({ _id: user._id }, config.JWT_SECRET, {  expiresIn: "1d" })
+        const refreshToken = jwt.sign({ _id: user._id }, config.JWT_SECRET, {  expiresIn: "30d" })
+
+        // 4 send user info to client
+        user.password = undefined
+        user.resetCode = undefined
+        return res.json({ token, refreshToken, user })
+
+    } catch (error) {
+        console.log(error);
+        return res.json({ error: "Something wrong. Try again." });
+    }
+}
