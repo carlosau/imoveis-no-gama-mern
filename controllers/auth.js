@@ -1,6 +1,10 @@
 import * as config from "../config.js";
 import jwt from "jsonwebtoken";
 import { emailTemplate } from "../helpers/email.js";
+import { hashPassword, comparePassword } from "../helpers/auth.js";
+import User from "../models/user.js";
+import { nanoid } from "nanoid";
+import validator from "email-validator"
 
 export const welcome = (req, res) => {
   res.json({
@@ -39,8 +43,26 @@ export const preRegister = async (req, res) => {
 
 export const register = async (req, res) => {
   try {
-    console.log(req.body);
-    return res.json({ ok: true });
+    const {email, password} = jwt.verify(req.body.token, config.JWT_SECRET)
+
+    const hashedPassword = await hashPassword(password)
+
+    const user = await new User({
+        username: nanoid(6),
+        email,
+        password: hashedPassword,
+    }).save()
+
+    const jwtToken = jwt.sign({ _id: user._id }, config.JWT_SECRET, {
+        expiresIn: "1h"})
+    const refreshToken = jwt.sign({ _id: user._id }, config.JWT_SECRET, {
+        expiresIn: "7d"})
+        
+    user.password = undefined
+    user.resetCode = undefined
+
+    return res.json({ token: jwtToken, refreshToken, user })
+
   } catch (error) {
     console.log(error);
     return res.json({ error: "Something wrong. Try again." });

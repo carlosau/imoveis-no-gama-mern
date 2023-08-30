@@ -12,7 +12,7 @@ const schema = new Schema({
     role: { type: [String], default: ["Buyer"], enum: ["Admin", "Buyer", "Seller"] },
     enquiredProperties: [{ type: ObjectId, ref: 'Ad' }],
     wishList: [{ type: ObjectId, ref: 'Ad' }],
-    resetCode: ""
+    resetCode: {type: String, default: ''},
 }, {timestamps: true})
 
 export default model('User', schema);
